@@ -2,15 +2,17 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.stream.Stream;
 
 public class MainClass {
 
-    private final static int MAX_DATA_NUM = 1_000_000;
+    private final static int MAX_DATA_NUM = 1000;
 
     public static void main(String[] args){
         try {
@@ -21,7 +23,7 @@ public class MainClass {
 
             for (int i = 0; i < MAX_DATA_NUM; i++) {
                 raw_data[i] = rand.nextInt(MAX_DATA_NUM);
-//                    System.out.println(raw_data[i]);
+                System.out.println(raw_data[i]);
             }
 
             Stopwatch stopwatch = new Stopwatch();
@@ -35,7 +37,6 @@ public class MainClass {
             qs.sort(0, data.length - 1);
             double afterQs = stopwatch.elapsedTime();
             assertSort(data);
-
 
             /**
              * QuickSort (Parallel) implemented with ExecutorService and Future List
@@ -68,10 +69,20 @@ public class MainClass {
             double afterQsp2 = stopwatch.elapsedTime();
             assertSort(data);
 
+            /**
+             * QuickSort (Parallel) implemented with parallel streams and lambda functions
+             */
+            System.arraycopy(raw_data, 0, data, 0, raw_data.length);
+            double beforeQsp3 = stopwatch.elapsedTime();
+            QSP3 qSP3 = new QSP3(Arrays.stream(data).boxed().toArray(Integer[]::new));
+            Stream<Integer> streamData = qSP3.compute();
+            double afterQsp3 = stopwatch.elapsedTime();
+            assertSort(data);
 
             System.out.println("QuickSort takes " + String.format("%.4f", (afterQs - beforeQs)) + "s");
             System.out.println("QuickSortParallel takes " + String.format("%.4f", (afterQsp - beforeQsp)) + "s");
             System.out.println("QuickSortParallel2 takes " + String.format("%.4f", (afterQsp2 - beforeQsp2)) + "s");
+            System.out.println("QuickSortParallel3 takes " + String.format("%.4f", (afterQsp3 - beforeQsp3)) + "s");
 
         } catch (Exception e){
             e.printStackTrace();
