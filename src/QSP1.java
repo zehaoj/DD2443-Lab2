@@ -11,7 +11,7 @@ public class QSP1 implements Runnable{
     private List<Future> futures;
 
     private static int numOfProcessors = Runtime.getRuntime().availableProcessors();
-    private static int count = 1;
+//    private static int numOfProcessors = 0;
 
     public QSP1(int[] arr, int begin, int end, ExecutorService executorService, List<Future> futures){
         this.data = arr;
@@ -19,6 +19,7 @@ public class QSP1 implements Runnable{
         this.end = end;
         this.executorService = executorService;
         this.futures = futures;
+//        this.numOfProcessors = i;
     }
 
     @Override
@@ -59,37 +60,26 @@ public class QSP1 implements Runnable{
         return l;
     }
 
-    private void parallelSort(int[] arr, int left, int right){
+    private void parallelSort(int[] arr, int left, int right) {
 
         int l = partition(arr, left, right);
 
-        if (l - left > 1){
-            if (count < numOfProcessors){
-                count++;
+        if (l - left > 1) {
+            if (futures.size() < numOfProcessors) {
                 futures.add(executorService.submit(new QSP1(arr, left, l - 1, executorService, futures)));
-            }
-            else{
-//                Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-//                for (Thread x : threadSet) {
-//                    System.out.println(x.getName());
-//                }
+            } else {
                 sort(arr, left, l - 1);
             }
+//            executorService.execute(new QSP1(arr, left, l - 1, executorService, futures));
         }
-        if (right - l > 1){
-            if (count < numOfProcessors){
-                count++;
+        if (right - l > 1) {
+            if (futures.size() < numOfProcessors) {
                 futures.add(executorService.submit(new QSP1(arr, l + 1, right, executorService, futures)));
-            }
-            else{
-//                Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
-//                System.out.println(threadSet.size());
-//                for (Thread x : threadSet) {
-//                    System.out.println(x.getName());
-//                }
+            } else {
                 sort(arr, l + 1, right);
             }
+//            executorService.execute(new QSP1(arr, l + 1, right, executorService, futures));
+//        }
         }
-        count--;
     }
 }

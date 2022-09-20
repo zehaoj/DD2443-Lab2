@@ -8,7 +8,6 @@ public class QSP2 extends RecursiveAction {
     private int end = 0;
 
     private static int numOfProcessors = Runtime.getRuntime().availableProcessors();
-    private static int count = 0;
 
     public QSP2(int[] arr, int begin, int end){
         this.data = arr;
@@ -60,10 +59,7 @@ public class QSP2 extends RecursiveAction {
         int l = partition(arr, left, right);
 
         if (l - left > 1){
-//            System.out.println(count + " " + numOfProcessors);
-            if (count < numOfProcessors){
-                count++;
-                //System.out.println("l: " + l + "\tleft: " + left);
+            if (futures.size() < numOfProcessors){
                 QSP2 leftTask = new QSP2(arr, left, l - 1);
                 futures.add(leftTask);
             }
@@ -72,10 +68,7 @@ public class QSP2 extends RecursiveAction {
             }
         }
         if (right - l > 1){
-//            System.out.println(count + " " + numOfProcessors);
-            if (count < numOfProcessors){
-                count++;
-                //System.out.println("right: " + right + "\tl: " + l);
+            if (futures.size() < numOfProcessors){
                 QSP2 rightTask = new QSP2(arr, l + 1, right);
                 futures.add(rightTask);
             }
@@ -85,6 +78,5 @@ public class QSP2 extends RecursiveAction {
         }
         if (!futures.isEmpty())
             invokeAll(futures);
-        count--;
     }
 }

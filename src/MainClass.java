@@ -30,15 +30,14 @@ public class MainClass {
                 int sampleCount = 0;
 
                 for (int i = 0; i < MAX_DATA_NUM; i++) {
-                    raw_data[i] = rand.nextInt(MAX_DATA_NUM);
-//                System.out.println(raw_data[i]);
+                    raw_data[i] = rand.nextInt(10 * MAX_DATA_NUM);
                 }
 
                 System.out.println(Runtime.getRuntime().availableProcessors());
 
                 Stopwatch stopwatch = new Stopwatch();
 
-                int i = 4;
+                int i = 1;
                 while (i <= Runtime.getRuntime().availableProcessors()) {
                     /**
                      * QuickSort (Serial)
@@ -54,9 +53,9 @@ public class MainClass {
                      * QuickSort (Parallel) implemented with ExecutorService and Future List
                      */
                     System.arraycopy(raw_data, 0, data, 0, raw_data.length);
-                    double beforeQsp = stopwatch.elapsedTime();
                     List<Future> futures = new Vector<>();
                     ExecutorService executorService = Executors.newFixedThreadPool(i);
+                    double beforeQsp = stopwatch.elapsedTime();
                     QSP1 mainQspTask = new QSP1(data, 0, data.length - 1, executorService, futures);
                     futures.add(executorService.submit(mainQspTask));
                     while (!futures.isEmpty()) {
@@ -66,6 +65,7 @@ public class MainClass {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+//                        invokeAll(futures);
                     }
                     executorService.shutdown();
                     double afterQsp = stopwatch.elapsedTime();
@@ -113,6 +113,8 @@ public class MainClass {
                 System.out.println(String.format("%.4f", (qsMean[i] / 10)) + "s");
                 System.out.println(String.format("%.4f", (qspMean[i] / 10)) + "s");
                 System.out.println(String.format("%.4f", (qsp1Mean[i] / 10)) + "s");
+                System.out.println();
+
             }
 
         } catch (Exception e){
@@ -122,7 +124,9 @@ public class MainClass {
 
     private static void assertSort(int[] arr){
         for (int i = 1; i < arr.length; i++){
-            assert arr[i - 1] <= arr[i];
+            if (arr[i - 1] > arr[i]) {
+                System.out.println("wrong!!!");
+            }
         }
     }
 
