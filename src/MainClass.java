@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 public class MainClass {
 
     private final static int MAX_DATA_NUM = 1_000_000;
+    private final static int SAMPLING_TIMES = 11;
 
     public static void main(String[] args){
         try {
@@ -21,73 +22,97 @@ public class MainClass {
             int[] raw_data = new int[MAX_DATA_NUM];
             int[] data = new int[MAX_DATA_NUM];
 
-            for (int i = 0; i < MAX_DATA_NUM; i++) {
-                raw_data[i] = rand.nextInt(MAX_DATA_NUM);
+            double[] qsMean = new double[SAMPLING_TIMES];
+            double[] qspMean= new double[SAMPLING_TIMES];
+            double[] qsp1Mean = new double[SAMPLING_TIMES];
+
+            for (int j = 0; j < 10; j++) {
+                int sampleCount = 0;
+
+                for (int i = 0; i < MAX_DATA_NUM; i++) {
+                    raw_data[i] = rand.nextInt(MAX_DATA_NUM);
 //                System.out.println(raw_data[i]);
-            }
+                }
 
-            System.out.println(Runtime.getRuntime().availableProcessors());
+                System.out.println(Runtime.getRuntime().availableProcessors());
 
-            Stopwatch stopwatch = new Stopwatch();
+                Stopwatch stopwatch = new Stopwatch();
 
+                int i = 4;
+                while (i <= Runtime.getRuntime().availableProcessors()) {
+                    /**
+                     * QuickSort (Serial)
+                     */
+                    System.arraycopy(raw_data, 0, data, 0, raw_data.length);
+                    QS qs = new QS(data);
+                    double beforeQs = stopwatch.elapsedTime();
+                    qs.sort(0, data.length - 1);
+                    double afterQs = stopwatch.elapsedTime();
+                    assertSort(data);
 
-            for (int i = 4; i <= Runtime.getRuntime().availableProcessors(); i++) {
-                /**
-                 * QuickSort (Serial)
-                 */
-                System.arraycopy(raw_data, 0, data, 0, raw_data.length);
-                QS qs = new QS(data);
-                double beforeQs = stopwatch.elapsedTime();
-                qs.sort(0, data.length - 1);
-                double afterQs = stopwatch.elapsedTime();
-                assertSort(data);
+                    /**
+                     * QuickSort (Parallel) implemented with ExecutorService and Future List
+                     */
+                    System.arraycopy(raw_data, 0, data, 0, raw_data.length);
+                    double beforeQsp = stopwatch.elapsedTime();
+                    List<Future> futures = new Vector<>();
+                    ExecutorService executorService = Executors.newFixedThreadPool(i);
+                    QSP1 mainQspTask = new QSP1(data, 0, data.length - 1, executorService, futures);
+                    futures.add(executorService.submit(mainQspTask));
+                    while (!futures.isEmpty()) {
+                        Future topFuture = futures.remove(0);
+                        try {
+                            topFuture.get();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    executorService.shutdown();
+                    double afterQsp = stopwatch.elapsedTime();
+                    assertSort(data);
 
-                /**
-                 * QuickSort (Parallel) implemented with ExecutorService and Future List
-                 */
-                System.arraycopy(raw_data, 0, data, 0, raw_data.length);
-                double beforeQsp = stopwatch.elapsedTime();
-                List<Future> futures = new Vector<>();
-                ExecutorService executorService = Executors.newFixedThreadPool(i);
-                QSP1 mainQspTask = new QSP1(data, 0, data.length - 1, executorService, futures);
-                futures.add(executorService.submit(mainQspTask));
-                while (!futures.isEmpty()) {
-                    Future topFuture = futures.remove(0);
-                    try {
-                        topFuture.get();
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    /**
+                     * QuickSort (Parallel) implemented with RecursiveAction and ForkJoinPool
+                     */
+                    System.arraycopy(raw_data, 0, data, 0, raw_data.length);
+                    double beforeQsp2 = stopwatch.elapsedTime();
+                    final ForkJoinPool forkJoinPoolQsp = new ForkJoinPool(i);
+                    forkJoinPoolQsp.invoke(new QSP2(data, 0, data.length - 1));
+                    double afterQsp2 = stopwatch.elapsedTime();
+                    assertSort(data);
+
+                    /**
+                     * QuickSort (Parallel) implemented with parallel streams and lambda functions
+                     */
+                    //            System.arraycopy(raw_data, 0, data, 0, raw_data.length);
+                    //            double beforeQsp3 = stopwatch.elapsedTime();
+                    //            QSP3 qSP3 = new QSP3(Arrays.stream(data).boxed().toArray(Integer[]::new));
+                    //            Stream<Integer> streamData = qSP3.compute();
+                    //            double afterQsp3 = stopwatch.elapsedTime();
+                    //            assertSort(data);
+
+                    qsMean[sampleCount] += (afterQs - beforeQs);
+                    qspMean[sampleCount] += (afterQsp - beforeQsp);
+                    qsp1Mean[sampleCount] += (afterQsp2 - beforeQsp2);
+                    System.out.println("QuickSort takes " + String.format("%.4f", (afterQs - beforeQs)) + "s");
+                    System.out.println("QuickSortParallel takes " + String.format("%.4f", (afterQsp - beforeQsp)) + "s");
+                    System.out.println("QuickSortParallel2 takes " + String.format("%.4f", (afterQsp2 - beforeQsp2)) + "s");
+                    //            System.out.println("QuickSortParallel3 takes " + String.format("%.4f", (afterQsp3 - beforeQsp3)) + "s");
+                    sampleCount++;
+                    if (i < 8) {
+                        i++;
+                    } else if (i < 16) {
+                        i = i + 4;
+                    } else {
+                        i = i * 2;
                     }
                 }
-                executorService.shutdown();
-                double afterQsp = stopwatch.elapsedTime();
-                assertSort(data);
+            }
 
-                /**
-                 * QuickSort (Parallel) implemented with RecursiveAction and ForkJoinPool
-                 */
-                System.arraycopy(raw_data, 0, data, 0, raw_data.length);
-                double beforeQsp2 = stopwatch.elapsedTime();
-                final ForkJoinPool forkJoinPoolQsp = new ForkJoinPool(i);
-                forkJoinPoolQsp.invoke(new QSP2(data, 0, data.length - 1));
-                double afterQsp2 = stopwatch.elapsedTime();
-                assertSort(data);
-
-                /**
-                 * QuickSort (Parallel) implemented with parallel streams and lambda functions
-                 */
-    //            System.arraycopy(raw_data, 0, data, 0, raw_data.length);
-    //            double beforeQsp3 = stopwatch.elapsedTime();
-    //            QSP3 qSP3 = new QSP3(Arrays.stream(data).boxed().toArray(Integer[]::new));
-    //            Stream<Integer> streamData = qSP3.compute();
-    //            double afterQsp3 = stopwatch.elapsedTime();
-    //            assertSort(data);
-
-                System.out.println("QuickSort takes " + String.format("%.4f", (afterQs - beforeQs)) + "s");
-                System.out.println("QuickSortParallel takes " + String.format("%.4f", (afterQsp - beforeQsp)) + "s");
-                System.out.println("QuickSortParallel2 takes " + String.format("%.4f", (afterQsp2 - beforeQsp2)) + "s");
-    //            System.out.println("QuickSortParallel3 takes " + String.format("%.4f", (afterQsp3 - beforeQsp3)) + "s");
-
+            for (int i = 0; i < SAMPLING_TIMES; i++) {
+                System.out.println(String.format("%.4f", (qsMean[i] / 10)) + "s");
+                System.out.println(String.format("%.4f", (qspMean[i] / 10)) + "s");
+                System.out.println(String.format("%.4f", (qsp1Mean[i] / 10)) + "s");
             }
 
         } catch (Exception e){
