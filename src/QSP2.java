@@ -60,6 +60,7 @@ public class QSP2 extends RecursiveAction {
         int l = partition(arr, left, right);
 
         if (l - left > 1){
+//            System.out.println(count + " " + numOfProcessors);
             if (count < numOfProcessors){
                 count++;
                 //System.out.println("l: " + l + "\tleft: " + left);
@@ -71,6 +72,7 @@ public class QSP2 extends RecursiveAction {
             }
         }
         if (right - l > 1){
+//            System.out.println(count + " " + numOfProcessors);
             if (count < numOfProcessors){
                 count++;
                 //System.out.println("right: " + right + "\tl: " + l);
@@ -83,5 +85,6 @@ public class QSP2 extends RecursiveAction {
         }
         if (!futures.isEmpty())
             invokeAll(futures);
+        count--;
     }
 }

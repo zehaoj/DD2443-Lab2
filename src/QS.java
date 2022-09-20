@@ -1,3 +1,5 @@
+import java.util.Set;
+
 public class QS {
 
     private int [] data;
@@ -29,6 +31,10 @@ public class QS {
     }
 
     public void sort(int left, int right){
+//        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+//                for (Thread x : threadSet) {
+//                    System.out.println(x.getName());
+//                }
         if (left < right){
             int q = partition(left, right);
             sort(left, q - 1);

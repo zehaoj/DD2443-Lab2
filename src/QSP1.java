@@ -1,4 +1,5 @@
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -10,7 +11,7 @@ public class QSP1 implements Runnable{
     private List<Future> futures;
 
     private static int numOfProcessors = Runtime.getRuntime().availableProcessors();
-    private static int count = 0;
+    private static int count = 1;
 
     public QSP1(int[] arr, int begin, int end, ExecutorService executorService, List<Future> futures){
         this.data = arr;
@@ -68,6 +69,10 @@ public class QSP1 implements Runnable{
                 futures.add(executorService.submit(new QSP1(arr, left, l - 1, executorService, futures)));
             }
             else{
+//                Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+//                for (Thread x : threadSet) {
+//                    System.out.println(x.getName());
+//                }
                 sort(arr, left, l - 1);
             }
         }
@@ -77,8 +82,14 @@ public class QSP1 implements Runnable{
                 futures.add(executorService.submit(new QSP1(arr, l + 1, right, executorService, futures)));
             }
             else{
+//                Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+//                System.out.println(threadSet.size());
+//                for (Thread x : threadSet) {
+//                    System.out.println(x.getName());
+//                }
                 sort(arr, l + 1, right);
             }
         }
+        count--;
     }
 }
