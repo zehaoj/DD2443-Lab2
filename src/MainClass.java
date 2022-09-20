@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 public class MainClass {
 
     private final static int MAX_DATA_NUM = 1_000_000;
-    private final static int SAMPLING_TIMES = 11;
+    private final static int SAMPLING_TIMES = 12;
 
     public static void main(String[] args){
         try {
@@ -81,26 +81,17 @@ public class MainClass {
                     double afterQsp2 = stopwatch.elapsedTime();
                     assertSort(data);
 
-                    /**
-                     * QuickSort (Parallel) implemented with parallel streams and lambda functions
-                     */
-                    //            System.arraycopy(raw_data, 0, data, 0, raw_data.length);
-                    //            double beforeQsp3 = stopwatch.elapsedTime();
-                    //            QSP3 qSP3 = new QSP3(Arrays.stream(data).boxed().toArray(Integer[]::new));
-                    //            Stream<Integer> streamData = qSP3.compute();
-                    //            double afterQsp3 = stopwatch.elapsedTime();
-                    //            assertSort(data);
-
                     qsMean[sampleCount] += (afterQs - beforeQs);
                     qspMean[sampleCount] += (afterQsp - beforeQsp);
                     qsp1Mean[sampleCount] += (afterQsp2 - beforeQsp2);
                     System.out.println("QuickSort takes " + String.format("%.4f", (afterQs - beforeQs)) + "s");
                     System.out.println("QuickSortParallel takes " + String.format("%.4f", (afterQsp - beforeQsp)) + "s");
                     System.out.println("QuickSortParallel2 takes " + String.format("%.4f", (afterQsp2 - beforeQsp2)) + "s");
-                    //            System.out.println("QuickSortParallel3 takes " + String.format("%.4f", (afterQsp3 - beforeQsp3)) + "s");
                     sampleCount++;
-                    if (i < 8) {
+                    if (i < 4) {
                         i++;
+                    } else if (i < 8) {
+                        i = i + 2;
                     } else if (i < 16) {
                         i = i + 4;
                     } else {
