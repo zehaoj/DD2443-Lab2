@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -37,14 +38,37 @@ public class QSP3 {
             int key = arr.get(0);
 //            arr.get().forEach(x -> System.out.print(x + " "));
 //            System.out.println();
+
+//            if (arr.size() > 10) {
             List<Integer> lArr = pool.submit(() -> arr.parallelStream().skip(1).filter(x -> x < key).collect(Collectors.toList())).get();
             List<Integer> mArr = pool.submit(() -> arr.parallelStream().filter(x -> x == key).collect(Collectors.toList())).get();
             List<Integer> rArr = pool.submit(() -> arr.parallelStream().skip(1).filter(x -> x > key).collect(Collectors.toList())).get();
-            List<Integer> lRes = lArr.size() <= 1 ? lArr : sort(lArr, pool);
-            List<Integer> rRes = rArr.size() <= 1 ? rArr : sort(rArr, pool);
+//            List<Integer> rArr = arr;
+//            rArr.removeAll(lArr);
+//            rArr.removeAll(mArr);
+            List<Integer> lRes;
+            List<Integer> rRes;
+            if (lArr.size() <= 500) {
+                Collections.sort(lArr);
+                lRes = lArr;
+            } else {
+                lRes = sort(lArr, pool);
+            }
+
+            if (rArr.size() <= 500) {
+                Collections.sort(rArr);
+                rRes = rArr;
+            } else {
+                rRes = sort(rArr, pool);
+            }
+
             res.addAll(lRes);
             res.addAll(mArr);
             res.addAll(rRes);
+//            } else {
+//                Collections.sort(arr);
+//                res.addAll(arr);
+//            }
         }
         return res;
     }

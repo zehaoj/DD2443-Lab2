@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class QSP3Test {
 
-    private final static int MAX_DATA_NUM = 1_000;
+    private final static int MAX_DATA_NUM = 1_000_000;
     private final static int SAMPLING_TIMES = 12;
 
     public static void main(String[] args){
@@ -27,7 +27,7 @@ public class QSP3Test {
                 System.arraycopy(raw_data, 0, data, 0, raw_data.length);
                 double beforeQsp3 = stopwatch.elapsedTime();
                 QSP3 qSP3 = new QSP3(data);
-                int[] streamedData = qSP3.compute(1);
+                int[] streamedData = qSP3.compute(12);
                 double afterQsp3 = stopwatch.elapsedTime();
                 assertSort(streamedData);
 
