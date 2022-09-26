@@ -20,14 +20,14 @@ public class QSP3Test {
 
             Stopwatch stopwatch = new Stopwatch();
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 12; i++) {
                 /**
                  * QuickSort (Parallel) implemented with parallel streams and lambda functions
                  */
                 System.arraycopy(raw_data, 0, data, 0, raw_data.length);
                 double beforeQsp3 = stopwatch.elapsedTime();
                 QSP3 qSP3 = new QSP3(data);
-                int[] streamedData = qSP3.compute(12);
+                int[] streamedData = qSP3.compute(4);
                 double afterQsp3 = stopwatch.elapsedTime();
                 assertSort(streamedData);
 

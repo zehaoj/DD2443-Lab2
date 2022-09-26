@@ -48,14 +48,14 @@ public class QSP3 {
 //            rArr.removeAll(mArr);
             List<Integer> lRes;
             List<Integer> rRes;
-            if (lArr.size() <= 500) {
+            if (lArr.size() <= 50000) {
                 Collections.sort(lArr);
                 lRes = lArr;
             } else {
                 lRes = sort(lArr, pool);
             }
 
-            if (rArr.size() <= 500) {
+            if (rArr.size() <= 50000) {
                 Collections.sort(rArr);
                 rRes = rArr;
             } else {
